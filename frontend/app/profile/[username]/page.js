@@ -22,7 +22,7 @@ function Placeholder({ username, size = 'w-24 h-24 text-3xl' }) {
   const letter = (username || '?').charAt(0).toUpperCase();
   return (
     <div
-      className={`${size} flex items-center justify-center rounded-full bg-slate-200 font-semibold text-slate-600`}
+      className={`${size} flex items-center justify-center rounded-full bg-accent font-semibold text-accent-text`}
     >
       {letter}
     </div>
@@ -72,7 +72,7 @@ export default function ProfilePage() {
   if (loading) {
     return (
       <main className="mx-auto w-full max-w-xl px-4 py-10">
-        <p className="text-slate-500">Loading…</p>
+        <p className="text-text-muted">Loading…</p>
       </main>
     );
   }
@@ -80,9 +80,11 @@ export default function ProfilePage() {
   if (notFound) {
     return (
       <main className="mx-auto w-full max-w-xl px-4 py-10">
-        <h1 className="mb-2 text-2xl font-semibold text-slate-800">User not found</h1>
-        <p className="mb-4 text-slate-600">No user named &quot;{username}&quot; exists.</p>
-        <Link href="/" className="text-slate-700 underline">
+        <h1 className="mb-2 text-2xl font-bold">User not found</h1>
+        <p className="mb-4 text-text-muted">
+          No user named &quot;{username}&quot; exists.
+        </p>
+        <Link href="/" className="app-link">
           ← Back to homepage
         </Link>
       </main>
@@ -92,9 +94,7 @@ export default function ProfilePage() {
   if (error) {
     return (
       <main className="mx-auto w-full max-w-xl px-4 py-10">
-        <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-          {error}
-        </p>
+        <p className="alert-error">{error}</p>
       </main>
     );
   }
@@ -104,37 +104,37 @@ export default function ProfilePage() {
   return (
     <main className="mx-auto w-full max-w-xl px-4 py-10">
       <header className="mb-6 flex items-center justify-between">
-        <Link href="/" className="text-sm text-slate-600 hover:underline">
+        <Link href="/" className="muted-link text-sm">
           ← Back
         </Link>
         {isOwnProfile && (
-          <Link href="/settings" className="text-sm text-slate-700 underline">
+          <Link href="/settings" className="app-link text-sm">
             Edit profile
           </Link>
         )}
       </header>
 
-      <section className="flex items-start gap-5 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+      <section className="card flex flex-col items-center gap-5 p-7 text-center sm:flex-row sm:items-start sm:text-left">
         {profile.profile_picture_url ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={profile.profile_picture_url}
             alt={`${profile.username}'s avatar`}
-            className="h-24 w-24 rounded-full object-cover"
+            className="h-24 w-24 shrink-0 rounded-full object-cover ring-2 ring-border"
           />
         ) : (
           <Placeholder username={profile.username} />
         )}
 
         <div className="flex-1">
-          <h1 className="text-2xl font-semibold text-slate-800">{profile.username}</h1>
-          <p className="text-xs text-slate-500">
+          <h1 className="text-2xl font-bold">{profile.username}</h1>
+          <p className="mt-0.5 text-xs text-text-muted">
             Member since {formatDate(profile.created_at)}
           </p>
           {profile.bio ? (
-            <p className="mt-3 whitespace-pre-wrap text-slate-700">{profile.bio}</p>
+            <p className="mt-3 whitespace-pre-wrap text-text">{profile.bio}</p>
           ) : (
-            <p className="mt-3 text-sm italic text-slate-400">No bio yet.</p>
+            <p className="mt-3 text-sm italic text-text-muted">No bio yet.</p>
           )}
         </div>
       </section>

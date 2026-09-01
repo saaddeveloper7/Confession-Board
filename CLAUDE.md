@@ -68,3 +68,23 @@ All 10 auth tests passed in Postman (register, login, /me, wrong password, missi
 - Email is NEVER returned in GET /api/users/:username (privacy). Only returned in GET /api/auth/me for the logged-in user themselves.
 - Changing password also clears reset_token (safety: invalidates any pending reset link).
 - Rate limits: updateProfile 20/15min, changePassword 5/hr, uploadAvatar 10/hr per IP.
+
+## Security (hardening session)
+- **Helmet** added in `server.js` for security headers (`app.use(helmet(...))` before routes). CSP and crossOriginResourcePolicy are disabled because this is a pure JSON API (serves no HTML) and we don't want to interfere with CORS or Supabase Storage image URLs loaded by the frontend.
+- **CORS locked to FRONTEND_URL only** (no `origin: '*'`). Methods: GET/POST/PATCH/DELETE. Allowed headers: Content-Type, Authorization. Reads `process.env.FRONTEND_URL` (defaults to http://localhost:3000).
+- **Input sanitization** (`sanitize-html`) via `src/utils/sanitize.js` → `sanitizeText()`. Strips ALL HTML tags + trims. Applied to confession `content` and profile `bio` before DB insert (stored-XSS defense). NOT applied to email/username/password (they have own validation; sanitizing could corrupt them).
+- **Frontend XSS audit:** All user content (confessions, bios, usernames) renders via normal JSX, which auto-escapes — confirmed safe. The only `dangerouslySetInnerHTML` is the no-flash theme-init script in `app/layout.js`, which is a static developer-authored string with no user/dynamic input (not an injection vector).
+- **Avatar magic-bytes validation** in `userController.js` (`hasValidImageSignature`): checks the actual file buffer starts with a valid JPEG (FF D8 FF) / PNG (89 50 4E 47…) / WebP (RIFF…WEBP) signature, rejecting faked mimetypes with 400 "Invalid image file". Existing 2MB limit + mimetype check kept as first line of defense (defense in depth).
+- **Global error handler** at the end of `server.js`: logs full error server-side (`console.error`), returns generic `{ error: "Something went wrong" }` (500) to the client. All controller 500 catch blocks were also changed from leaking `err.message` to logging + returning the generic message — prevents DB-structure/internal info disclosure.
+
+## Design system (theme session)
+- **4 themes:** `light` (default), `dark`, `midnight` (indigo/violet accent), `warm` (cream bg, amber accent). Selected via a `data-theme` attribute on `<html>`.
+- **CSS-variable approach:** each theme defines a full palette (`--bg`, `--surface`, `--text`, `--text-muted`, `--border`, `--accent`, `--accent-hover`, `--accent-text`, `--shadow`) under a `[data-theme="…"]` block in `app/globals.css`. Tailwind v4 `@theme inline` maps these to utilities (`bg-bg`, `bg-surface`, `text-text`, `text-text-muted`, `border-border`, `bg-accent`, `text-accent`, `hover:bg-accent-hover`, etc.), so switching `data-theme` instantly restyles everything.
+- **Reusable component classes** in `globals.css` (`@layer components`): `.card`, `.input-field`, `.label`, `.btn-primary`, `.btn-secondary`, `.badge`, `.app-link`, `.muted-link`, `.alert-error/success/warn`. All pages use these for a uniform look. Alerts intentionally keep their own bg+text so they stay readable on every theme.
+- **Theme persistence:** choice saved to `localStorage` key `theme` (values: light/dark/midnight/warm), with safe fallback to `light` if unset/blocked. `components/ThemeProvider.js` is a React context (`useTheme()`) wrapping the app in `app/layout.js`.
+- **No-flash:** a tiny static (developer-authored, no user input) inline script in `layout.js <head>` reads `localStorage.theme` and sets `data-theme` before first paint, so there's no flash of the wrong theme.
+- **Fonts:** `next/font/google` — **Inter** for body (`--font-inter` → `--font-sans`), **Sora** for headings (`--font-sora` → `--font-display`, applied to h1–h4 in base layer).
+- **Theme switcher:** `components/ThemeSwitcher.js` — 4 small swatches (bg disc + accent dot), lives in the **homepage header** next to `AuthStatus`. Active theme gets an accent ring. Persists on click.
+
+## Security debt / TODO
+- **JWT still in localStorage — migrate to httpOnly cookies + CSRF in a dedicated future session.** Considered the top remaining security gap (localStorage tokens are readable by any XSS-injected script). Deliberately NOT touched in the hardening session to avoid breaking the working auth flow.

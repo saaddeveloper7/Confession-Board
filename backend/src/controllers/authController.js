@@ -83,7 +83,8 @@ async function registerUser(req, res) {
     const token = signToken(newUser);
     return res.status(201).json({ token, user: publicUser(newUser) });
   } catch (err) {
-    return res.status(500).json({ error: err.message });
+    console.error('Auth route error:', err);
+    return res.status(500).json({ error: 'Something went wrong' });
   }
 }
 
@@ -118,7 +119,8 @@ async function loginUser(req, res) {
     const token = signToken(user);
     return res.json({ token, user: publicUser(user) });
   } catch (err) {
-    return res.status(500).json({ error: err.message });
+    console.error('Auth route error:', err);
+    return res.status(500).json({ error: 'Something went wrong' });
   }
 }
 
@@ -136,7 +138,8 @@ async function getCurrentUser(req, res) {
 
     return res.json({ user: publicUser(user) });
   } catch (err) {
-    return res.status(500).json({ error: err.message });
+    console.error('Auth route error:', err);
+    return res.status(500).json({ error: 'Something went wrong' });
   }
 }
 
@@ -263,7 +266,8 @@ async function resetPassword(req, res) {
 
     return res.json({ message: 'Password reset successfully' });
   } catch (err) {
-    return res.status(500).json({ error: err.message });
+    console.error('Auth route error:', err);
+    return res.status(500).json({ error: 'Something went wrong' });
   }
 }
 

@@ -36,38 +36,34 @@ export default function NewConfessionPage() {
   return (
     <main className="mx-auto w-full max-w-2xl px-4 py-10">
       <header className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-slate-800">New Confession</h1>
-        <Link href="/" className="text-sm text-slate-600 hover:underline">
+        <h1 className="text-2xl font-bold">New confession</h1>
+        <Link href="/" className="muted-link text-sm">
           ← Back to feed
         </Link>
       </header>
 
-      <form
-        onSubmit={handleSubmit}
-        className="space-y-4 rounded-lg border border-slate-200 bg-white p-5 shadow-sm"
-      >
+      <form onSubmit={handleSubmit} className="card space-y-5 p-6">
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">
-            Confession
-          </label>
+          <label className="label">Confession</label>
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
             required
             rows={6}
             placeholder="Spill it…"
-            className="w-full resize-y rounded-md border border-slate-300 px-3 py-2 text-slate-800 outline-none focus:border-slate-500"
+            className="input-field resize-y"
           />
+          <p className="mt-1 text-right text-xs text-text-muted">
+            {content.length}/500
+          </p>
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">
-            Category
-          </label>
+          <label className="label">Category</label>
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-800 outline-none focus:border-slate-500"
+            className="input-field"
           >
             {CATEGORIES.map((c) => (
               <option key={c} value={c}>
@@ -77,25 +73,20 @@ export default function NewConfessionPage() {
           </select>
         </div>
 
-        {error && (
-          error.startsWith('Your confession was flagged') ? (
-            <div className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+        {error &&
+          (error.startsWith('Your confession was flagged') ? (
+            <div className="alert-warn">
               <p className="font-semibold">⚠ Flagged by moderation</p>
-              <p className="mt-0.5">{error.replace(/^Your confession was flagged:\s*/, '')}</p>
+              <p className="mt-0.5">
+                {error.replace(/^Your confession was flagged:\s*/, '')}
+              </p>
             </div>
           ) : (
-            <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-              {error}
-            </p>
-          )
-        )}
+            <p className="alert-error">{error}</p>
+          ))}
 
-        <button
-          type="submit"
-          disabled={submitting}
-          className="rounded-md bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50"
-        >
-          {submitting ? 'Posting…' : 'Post Confession'}
+        <button type="submit" disabled={submitting} className="btn-primary">
+          {submitting ? 'Posting…' : 'Post confession'}
         </button>
       </form>
     </main>

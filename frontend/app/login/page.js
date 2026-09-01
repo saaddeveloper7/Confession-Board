@@ -26,63 +26,58 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="mx-auto w-full max-w-md px-4 py-10">
-      <header className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-slate-800">Log In</h1>
-        <Link href="/" className="text-sm text-slate-600 hover:underline">
-          ← Back
+    <main className="mx-auto flex min-h-full w-full max-w-md flex-col justify-center px-4 py-12">
+      <div className="mb-8 text-center">
+        <Link href="/" className="inline-flex items-center gap-2">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent text-sm font-bold text-accent-text">
+            C
+          </span>
+          <span className="font-display text-lg font-bold tracking-tight">
+            Confession Board
+          </span>
         </Link>
-      </header>
+        <h1 className="mt-6 text-2xl font-bold">Welcome back</h1>
+        <p className="mt-1 text-sm text-text-muted">Log in to your account.</p>
+      </div>
 
-      <form
-        onSubmit={handleSubmit}
-        className="space-y-4 rounded-lg border border-slate-200 bg-white p-5 shadow-sm"
-      >
+      <form onSubmit={handleSubmit} className="card space-y-5 p-6">
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">Email</label>
+          <label className="label">Email</label>
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-slate-800 outline-none focus:border-slate-500"
+            className="input-field"
           />
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">Password</label>
+          <label className="label">Password</label>
           <input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-slate-800 outline-none focus:border-slate-500"
+            className="input-field"
           />
           <Link
             href="/forgot-password"
-            className="mt-1 inline-block text-xs text-slate-600 hover:underline"
+            className="muted-link mt-1.5 inline-block text-xs"
           >
             Forgot password?
           </Link>
         </div>
 
-        {error && (
-          <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-            {error}
-          </p>
-        )}
+        {error && <p className="alert-error">{error}</p>}
 
-        <button
-          type="submit"
-          disabled={submitting}
-          className="w-full rounded-md bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50"
-        >
+        <button type="submit" disabled={submitting} className="btn-primary w-full">
           {submitting ? 'Logging in…' : 'Log in'}
         </button>
 
-        <p className="text-center text-sm text-slate-600">
+        <p className="text-center text-sm text-text-muted">
           Don&apos;t have an account?{' '}
-          <Link href="/register" className="text-slate-800 underline">
+          <Link href="/register" className="app-link font-medium">
             Register
           </Link>
         </p>

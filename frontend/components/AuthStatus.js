@@ -11,13 +11,13 @@ function AvatarCircle({ user }) {
       <img
         src={user.profile_picture_url}
         alt={`${user.username}'s avatar`}
-        className="h-7 w-7 rounded-full object-cover"
+        className="h-7 w-7 rounded-full object-cover ring-1 ring-border"
       />
     );
   }
   const letter = (user.username || '?').charAt(0).toUpperCase();
   return (
-    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-200 text-xs font-semibold text-slate-600">
+    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-accent text-xs font-semibold text-accent-text">
       {letter}
     </div>
   );
@@ -50,7 +50,7 @@ export default function AuthStatus() {
   }
 
   if (loading) {
-    return <div className="text-sm text-slate-400">…</div>;
+    return <div className="text-sm text-text-muted">…</div>;
   }
 
   if (user) {
@@ -58,20 +58,17 @@ export default function AuthStatus() {
       <div className="flex items-center gap-3 text-sm">
         <Link
           href={`/profile/${user.username}`}
-          className="flex items-center gap-2 text-slate-700 hover:underline"
+          className="flex items-center gap-2 text-text transition hover:text-accent"
         >
           <AvatarCircle user={user} />
-          <span>
-            Hi, <span className="font-medium">{user.username}</span>
+          <span className="hidden sm:inline">
+            Hi, <span className="font-semibold">{user.username}</span>
           </span>
         </Link>
-        <Link href="/settings" className="text-slate-700 hover:underline">
+        <Link href="/settings" className="muted-link">
           Settings
         </Link>
-        <button
-          onClick={handleLogout}
-          className="rounded-md border border-slate-300 px-3 py-1 text-slate-700 hover:bg-slate-100"
-        >
+        <button onClick={handleLogout} className="btn-secondary">
           Logout
         </button>
       </div>
@@ -80,13 +77,10 @@ export default function AuthStatus() {
 
   return (
     <div className="flex items-center gap-3 text-sm">
-      <Link href="/login" className="text-slate-700 hover:underline">
+      <Link href="/login" className="muted-link">
         Login
       </Link>
-      <Link
-        href="/register"
-        className="rounded-md bg-slate-800 px-3 py-1 text-white hover:bg-slate-700"
-      >
+      <Link href="/register" className="btn-primary">
         Register
       </Link>
     </div>

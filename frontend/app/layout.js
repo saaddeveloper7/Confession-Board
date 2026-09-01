@@ -1,14 +1,18 @@
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter, Sora } from "next/font/google";
 import "./globals.css";
+import { ThemeProvider } from "../components/ThemeProvider";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const sora = Sora({
+  variable: "--font-sora",
   subsets: ["latin"],
+  weight: ["600", "700"],
+  display: "swap",
 });
 
 export const metadata = {
@@ -16,13 +20,38 @@ export const metadata = {
   description: "Anonymous confessions, posted by silent foxes.",
 };
 
+// Runs before first paint to apply the saved theme, preventing a flash of the
+// wrong theme. Static, developer-authored string (no user input) — not an XSS
+// vector. Falls back to "light" if nothing is stored or storage is blocked.
+const themeInitScript = `
+(function () {
+  try {
+    var t = localStorage.getItem('theme');
+    var allowed = ['light', 'dark', 'midnight', 'warm'];
+    document.documentElement.setAttribute(
+      'data-theme',
+      allowed.indexOf(t) !== -1 ? t : 'light'
+    );
+  } catch (e) {
+    document.documentElement.setAttribute('data-theme', 'light');
+  }
+})();
+`;
+
 export default function RootLayout({ children }) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      data-theme="light"
+      className={`${inter.variable} ${sora.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
-      <body className="min-h-full bg-slate-50 text-slate-900">{children}</body>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
+      <body className="min-h-full bg-bg text-text">
+        <ThemeProvider>{children}</ThemeProvider>
+      </body>
     </html>
   );
 }

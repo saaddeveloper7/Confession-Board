@@ -1,5 +1,6 @@
 const supabase = require('../config/supabase');
 const { moderateContent, detectMood } = require('../services/aiService');
+const { sanitizeText } = require('../utils/sanitize');
 
 const MAX_CONTENT_LENGTH = 500;
 const ALLOWED_CATEGORIES = ['Relationships', 'Work', 'School', 'Life', 'Funny'];
@@ -67,10 +68,14 @@ async function createConfession(req, res) {
 
     const anonymous_username = generateAnonymousUsername();
 
+    // Sanitize just before storage: strip any HTML so stored content is plain
+    // text (stored-XSS defense). Moderation/mood ran on the original text above.
+    const cleanContent = sanitizeText(trimmedContent);
+
     const { data, error } = await supabase
       .from('confessions')
       .insert([{
-        content: trimmedContent,
+        content: cleanContent,
         anonymous_username,
         category: normalizedCategory,
         mood,
@@ -82,7 +87,8 @@ async function createConfession(req, res) {
 
     res.status(201).json(data);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('Confession route error:', err);
+    res.status(500).json({ error: 'Something went wrong' });
   }
 }
 
@@ -98,7 +104,8 @@ async function getAllConfessions(req, res) {
 
     res.json(data);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('Confession route error:', err);
+    res.status(500).json({ error: 'Something went wrong' });
   }
 }
 
@@ -122,7 +129,8 @@ async function getConfessionById(req, res) {
 
     res.json(data);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('Confession route error:', err);
+    res.status(500).json({ error: 'Something went wrong' });
   }
 }
 
@@ -147,7 +155,8 @@ async function deleteConfession(req, res) {
 
     res.json({ message: 'Confession deleted', data });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('Confession route error:', err);
+    res.status(500).json({ error: 'Something went wrong' });
   }
 }
 

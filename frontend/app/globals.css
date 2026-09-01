@@ -1,17 +1,259 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* ──────────────────────────────────────────────────────────────
+   THEME PALETTES
+   Four themes, each a complete + readable palette. Values are read
+   at runtime via [data-theme] on <html>, so switching the attribute
+   instantly restyles the whole app. Defaults to "light".
+   ────────────────────────────────────────────────────────────── */
+
+:root,
+[data-theme="light"] {
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --text: #0f172a;
+  --text-muted: #64748b;
+  --border: #e2e8f0;
+  --accent: #4f46e5;
+  --accent-hover: #4338ca;
+  --accent-text: #ffffff;
+  --shadow: 0 1px 2px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.08);
 }
 
+[data-theme="dark"] {
+  --bg: #0f0f12;
+  --surface: #1a1a20;
+  --text: #f1f5f9;
+  --text-muted: #98a2b3;
+  --border: #2a2a33;
+  --accent: #3b82f6;
+  --accent-hover: #60a5fa;
+  --accent-text: #ffffff;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="midnight"] {
+  --bg: #0c0a1d;
+  --surface: #17152b;
+  --text: #eceafb;
+  --text-muted: #a7a3c8;
+  --border: #2c2848;
+  --accent: #6366f1;
+  --accent-hover: #818cf8;
+  --accent-text: #ffffff;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.45), 0 4px 16px rgba(49, 46, 129, 0.25);
+}
+
+[data-theme="warm"] {
+  --bg: #faf6f0;
+  --surface: #fffdf9;
+  --text: #3d3228;
+  --text-muted: #8a7a68;
+  --border: #ece1d3;
+  --accent: #d97706;
+  --accent-hover: #b45309;
+  --accent-text: #ffffff;
+  --shadow: 0 1px 2px rgba(120, 80, 30, 0.07), 0 1px 3px rgba(120, 80, 30, 0.1);
+}
+
+/* Map theme variables + fonts into Tailwind utilities.
+   `inline` keeps them as var() references so runtime theme swaps work,
+   enabling classes like bg-bg, bg-surface, text-text, border-border,
+   bg-accent, text-accent, hover:bg-accent-hover, etc. */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-text: var(--text);
+  --color-text-muted: var(--text-muted);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-text: var(--accent-text);
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-sora), var(--font-inter), ui-sans-serif, sans-serif;
 }
 
-body {
-  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+/* ──────────────────────────────────────────────────────────────
+   BASE TYPOGRAPHY
+   ────────────────────────────────────────────────────────────── */
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 0.9375rem; /* 15px */
+    line-height: 1.65;
+    letter-spacing: -0.006em;
+    /* Smooth theme transitions — color only, kept subtle */
+    transition: background-color 150ms ease, color 150ms ease;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    text-wrap: balance;
+  }
+
+  /* Native form controls inherit theme-aware colors */
+  input, textarea, select, button {
+    font-family: inherit;
+  }
+
+  /* Make the native select dropdown + date pickers legible in dark themes */
+  option {
+    background-color: var(--surface);
+    color: var(--text);
+  }
+
+  ::selection {
+    background-color: color-mix(in srgb, var(--accent) 30%, transparent);
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────
+   REUSABLE COMPONENT CLASSES
+   Built on the CSS variables so a theme switch restyles everything
+   uniformly. Used across all pages for a cohesive look.
+   ────────────────────────────────────────────────────────────── */
+@layer components {
+  .card {
+    background-color: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 0.875rem; /* 14px */
+    box-shadow: var(--shadow);
+  }
+
+  .input-field {
+    width: 100%;
+    border-radius: 0.625rem;
+    border: 1px solid var(--border);
+    background-color: var(--surface);
+    color: var(--text);
+    padding: 0.5rem 0.75rem;
+    font-size: 0.9375rem;
+    transition: border-color 150ms ease, box-shadow 150ms ease;
+  }
+  .input-field::placeholder {
+    color: var(--text-muted);
+    opacity: 0.7;
+  }
+  .input-field:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+  }
+
+  .label {
+    display: block;
+    margin-bottom: 0.375rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    border-radius: 0.625rem;
+    background-color: var(--accent);
+    color: var(--accent-text);
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: background-color 150ms ease, opacity 150ms ease;
+  }
+  .btn-primary:hover {
+    background-color: var(--accent-hover);
+  }
+  .btn-primary:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    border-radius: 0.625rem;
+    background-color: transparent;
+    color: var(--text);
+    padding: 0.4rem 0.85rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: background-color 150ms ease, border-color 150ms ease;
+  }
+  .btn-secondary:hover {
+    background-color: color-mix(in srgb, var(--text) 7%, transparent);
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 9999px;
+    background-color: color-mix(in srgb, var(--accent) 12%, transparent);
+    color: var(--accent);
+    padding: 0.125rem 0.625rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+  }
+
+  /* Theme-aware accent link */
+  .app-link {
+    color: var(--accent);
+    transition: opacity 150ms ease;
+  }
+  .app-link:hover {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  /* Muted plain link (back links, secondary nav) */
+  .muted-link {
+    color: var(--text-muted);
+    transition: color 150ms ease;
+  }
+  .muted-link:hover {
+    color: var(--text);
+  }
+
+  /* Alerts carry their own background + text, so they stay readable
+     against every theme surface. */
+  .alert-error {
+    border-radius: 0.625rem;
+    border: 1px solid #fecaca;
+    background-color: #fef2f2;
+    color: #b91c1c;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+  }
+  .alert-success {
+    border-radius: 0.625rem;
+    border: 1px solid #bbf7d0;
+    background-color: #f0fdf4;
+    color: #15803d;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+  }
+  .alert-warn {
+    border-radius: 0.625rem;
+    border: 1px solid #fcd34d;
+    background-color: #fffbeb;
+    color: #b45309;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+  }
 }

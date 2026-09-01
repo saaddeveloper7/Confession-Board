@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { getAllConfessions, deleteConfession } from '../lib/api';
 import { moodEmoji } from '../lib/utils';
 import AuthStatus from '../components/AuthStatus';
+import ThemeSwitcher from '../components/ThemeSwitcher';
 
 function formatDate(iso) {
   if (!iso) return '';
@@ -51,74 +52,99 @@ export default function Home() {
   }
 
   return (
-    <main className="mx-auto w-full max-w-2xl px-4 py-10">
-      <div className="mb-6 flex justify-end">
-        <AuthStatus />
-      </div>
-
-      <header className="mb-8 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-slate-800">Confession Board</h1>
-        <Link
-          href="/new"
-          className="rounded-md bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
-        >
-          Post a Confession
-        </Link>
+    <div className="min-h-full">
+      {/* Top bar */}
+      <header className="sticky top-0 z-10 border-b border-border bg-bg/80 backdrop-blur">
+        <div className="mx-auto flex w-full max-w-3xl items-center justify-between gap-4 px-4 py-3">
+          <Link href="/" className="flex items-center gap-2">
+            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent text-sm font-bold text-accent-text">
+              C
+            </span>
+            <span className="font-display text-base font-bold tracking-tight">
+              Confession Board
+            </span>
+          </Link>
+          <div className="flex items-center gap-4">
+            <ThemeSwitcher />
+            <div className="hidden h-5 w-px bg-border sm:block" />
+            <AuthStatus />
+          </div>
+        </div>
       </header>
 
-      {loading && <p className="text-slate-500">Loading…</p>}
+      <main className="mx-auto w-full max-w-3xl px-4 py-8">
+        <div className="mb-6 flex items-end justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold sm:text-3xl">The feed</h1>
+            <p className="mt-1 text-sm text-text-muted">
+              Anonymous confessions from across the board.
+            </p>
+          </div>
+          <Link href="/new" className="btn-primary whitespace-nowrap">
+            + Post a confession
+          </Link>
+        </div>
 
-      {error && (
-        <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-          {error}
-        </p>
-      )}
+        {loading && (
+          <div className="space-y-4">
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="card animate-pulse p-5">
+                <div className="mb-3 h-3 w-32 rounded bg-border" />
+                <div className="mb-2 h-3 w-full rounded bg-border" />
+                <div className="h-3 w-2/3 rounded bg-border" />
+              </div>
+            ))}
+          </div>
+        )}
 
-      {!loading && !error && confessions.length === 0 && (
-        <p className="text-slate-500">No confessions yet. Be the first.</p>
-      )}
+        {error && <p className="alert-error">{error}</p>}
 
-      <ul className="space-y-4">
-        {confessions.map((c) => (
-          <li
-            key={c.id}
-            className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm"
-          >
-            <div className="mb-2 flex items-center justify-between text-xs text-slate-500">
-              <span className="font-medium text-slate-700">
-                {c.anonymous_username || 'Anonymous'}
-                {moodEmoji(c.mood) && (
-                  <span className="ml-1" title={c.mood}>{moodEmoji(c.mood)}</span>
-                )}
-              </span>
-              <span>{formatDate(c.created_at)}</span>
-            </div>
+        {!loading && !error && confessions.length === 0 && (
+          <div className="card flex flex-col items-center gap-2 px-4 py-16 text-center">
+            <span className="text-3xl">🤫</span>
+            <p className="font-display text-lg font-semibold">No confessions yet</p>
+            <p className="text-sm text-text-muted">Be the first to share something.</p>
+            <Link href="/new" className="btn-primary mt-3">
+              Post a confession
+            </Link>
+          </div>
+        )}
 
-            {c.category && (
-              <span className="mb-2 inline-block rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600">
-                {c.category}
-              </span>
-            )}
+        <ul className="space-y-4">
+          {confessions.map((c) => (
+            <li
+              key={c.id}
+              className="card p-5 transition hover:-translate-y-0.5 hover:shadow-md"
+            >
+              <div className="mb-2 flex items-center justify-between gap-3 text-xs text-text-muted">
+                <span className="flex items-center gap-1.5 font-medium text-text">
+                  {c.anonymous_username || 'Anonymous'}
+                  {moodEmoji(c.mood) && (
+                    <span title={c.mood}>{moodEmoji(c.mood)}</span>
+                  )}
+                </span>
+                <span>{formatDate(c.created_at)}</span>
+              </div>
 
-            <p className="whitespace-pre-wrap text-slate-800">{c.content}</p>
+              {c.category && <span className="badge mb-2">{c.category}</span>}
 
-            <div className="mt-3 flex items-center gap-3 text-sm">
-              <Link
-                href={`/confessions/${c.id}`}
-                className="text-slate-700 hover:underline"
-              >
-                View
-              </Link>
-              <button
-                onClick={() => handleDelete(c.id)}
-                className="text-red-600 hover:underline"
-              >
-                Delete
-              </button>
-            </div>
-          </li>
-        ))}
-      </ul>
-    </main>
+              <p className="whitespace-pre-wrap text-text">{c.content}</p>
+
+              <div className="mt-4 flex items-center gap-4 border-t border-border pt-3 text-sm">
+                <Link href={`/confessions/${c.id}`} className="app-link">
+                  View
+                </Link>
+                <button
+                  onClick={() => handleDelete(c.id)}
+                  className="text-text-muted transition hover:text-red-500"
+                >
+                  Delete
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </main>
+    </div>
   );
 }

@@ -7,9 +7,9 @@ import { resetPassword, verifyResetToken } from '../../lib/auth';
 
 function InvalidLinkBanner({ message = 'Invalid or expired reset link' }) {
   return (
-    <div className="space-y-3 rounded-lg border border-red-200 bg-red-50 p-5">
-      <p className="text-sm text-red-800">{message}</p>
-      <Link href="/forgot-password" className="block text-sm text-slate-800 underline">
+    <div className="card space-y-3 p-6">
+      <p className="alert-error">{message}</p>
+      <Link href="/forgot-password" className="app-link block text-sm">
         Request a new reset link
       </Link>
     </div>
@@ -59,7 +59,7 @@ function ResetPasswordInner() {
   }, [success, router]);
 
   if (tokenValid === null) {
-    return <p className="text-sm text-slate-500">Verifying link…</p>;
+    return <p className="text-sm text-text-muted">Verifying link…</p>;
   }
 
   if (tokenValid === false) {
@@ -87,59 +87,53 @@ function ResetPasswordInner() {
 
   if (success) {
     return (
-      <div className="rounded-lg border border-green-200 bg-green-50 p-5 text-sm text-green-800">
-        Password reset successfully! Redirecting to login…
+      <div className="card p-6">
+        <p className="alert-success">
+          Password reset successfully! Redirecting to login…
+        </p>
       </div>
     );
   }
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="space-y-4 rounded-lg border border-slate-200 bg-white p-5 shadow-sm"
-    >
+    <form onSubmit={handleSubmit} className="card space-y-5 p-6">
       <div>
-        <label className="mb-1 block text-sm font-medium text-slate-700">New Password</label>
+        <label className="label">New password</label>
         <input
           type="password"
           value={newPassword}
           onChange={(e) => setNewPassword(e.target.value)}
           required
           minLength={6}
-          className="w-full rounded-md border border-slate-300 px-3 py-2 text-slate-800 outline-none focus:border-slate-500"
+          className="input-field"
         />
       </div>
 
       <div>
-        <label className="mb-1 block text-sm font-medium text-slate-700">
-          Confirm New Password
-        </label>
+        <label className="label">Confirm new password</label>
         <input
           type="password"
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
           required
           minLength={6}
-          className="w-full rounded-md border border-slate-300 px-3 py-2 text-slate-800 outline-none focus:border-slate-500"
+          className="input-field"
         />
       </div>
 
       {error && (
-        <div className="space-y-2 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+        <div className="alert-error space-y-2">
           <p>{error}</p>
-          {error.toLowerCase().includes('expired') || error.toLowerCase().includes('invalid') ? (
-            <Link href="/forgot-password" className="block text-slate-800 underline">
+          {error.toLowerCase().includes('expired') ||
+          error.toLowerCase().includes('invalid') ? (
+            <Link href="/forgot-password" className="block font-semibold underline">
               Request a new reset link
             </Link>
           ) : null}
         </div>
       )}
 
-      <button
-        type="submit"
-        disabled={submitting}
-        className="w-full rounded-md bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50"
-      >
+      <button type="submit" disabled={submitting} className="btn-primary w-full">
         {submitting ? 'Resetting…' : 'Reset password'}
       </button>
     </form>
@@ -148,15 +142,13 @@ function ResetPasswordInner() {
 
 export default function ResetPasswordPage() {
   return (
-    <main className="mx-auto w-full max-w-md px-4 py-10">
-      <header className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-slate-800">Reset Password</h1>
-        <Link href="/login" className="text-sm text-slate-600 hover:underline">
-          ← Back to login
-        </Link>
-      </header>
+    <main className="mx-auto flex min-h-full w-full max-w-md flex-col justify-center px-4 py-12">
+      <div className="mb-8 text-center">
+        <h1 className="text-2xl font-bold">Reset password</h1>
+        <p className="mt-1 text-sm text-text-muted">Choose a new password.</p>
+      </div>
 
-      <Suspense fallback={<p className="text-sm text-slate-500">Loading…</p>}>
+      <Suspense fallback={<p className="text-center text-sm text-text-muted">Loading…</p>}>
         <ResetPasswordInner />
       </Suspense>
     </main>

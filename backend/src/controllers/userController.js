@@ -1,6 +1,7 @@
 const bcrypt = require('bcrypt');
 const path = require('path');
 const supabase = require('../config/supabase');
+const { sanitizeText } = require('../utils/sanitize');
 
 const SALT_ROUNDS = 10;
 const USERNAME_REGEX = /^[A-Za-z0-9_]{3,20}$/;
@@ -13,6 +14,34 @@ const ALLOWED_MIME = {
   'image/png': 'png',
   'image/webp': 'webp',
 };
+
+// Verify the actual bytes of the uploaded buffer match a real image format.
+// mimetype is client-supplied and trivially faked, so we inspect the file
+// signature (magic bytes) as defense in depth before trusting the upload.
+function hasValidImageSignature(buffer) {
+  if (!Buffer.isBuffer(buffer) || buffer.length < 12) return false;
+
+  // JPEG: FF D8 FF
+  if (buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff) {
+    return true;
+  }
+
+  // PNG: 89 50 4E 47 0D 0A 1A 0A
+  const PNG_SIG = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
+  if (PNG_SIG.every((byte, i) => buffer[i] === byte)) {
+    return true;
+  }
+
+  // WebP: bytes 0-3 = "RIFF", bytes 8-11 = "WEBP"
+  if (
+    buffer.toString('ascii', 0, 4) === 'RIFF' &&
+    buffer.toString('ascii', 8, 12) === 'WEBP'
+  ) {
+    return true;
+  }
+
+  return false;
+}
 
 function publicProfile(row) {
   return {
@@ -55,7 +84,8 @@ async function getPublicProfile(req, res) {
 
     return res.json({ user: publicProfile(user) });
   } catch (err) {
-    return res.status(500).json({ error: err.message });
+    console.error('User route error:', err);
+    return res.status(500).json({ error: 'Something went wrong' });
   }
 }
 
@@ -91,11 +121,13 @@ async function updateProfile(req, res) {
       if (typeof bio !== 'string') {
         return res.status(400).json({ error: 'Bio must be a string' });
       }
-      const trimmed = bio.trim();
-      if (trimmed.length > MAX_BIO_LENGTH) {
+      // Sanitize: strip any HTML and trim (stored-XSS defense). Length is
+      // validated against the cleaned value, which is what we actually store.
+      const cleanBio = sanitizeText(bio);
+      if (cleanBio.length > MAX_BIO_LENGTH) {
         return res.status(400).json({ error: `Bio must be ${MAX_BIO_LENGTH} characters or fewer` });
       }
-      updates.bio = trimmed;
+      updates.bio = cleanBio;
     }
 
     if (Object.keys(updates).length === 0) {
@@ -113,7 +145,8 @@ async function updateProfile(req, res) {
 
     return res.json({ user: fullUser(updated) });
   } catch (err) {
-    return res.status(500).json({ error: err.message });
+    console.error('User route error:', err);
+    return res.status(500).json({ error: 'Something went wrong' });
   }
 }
 
@@ -160,7 +193,8 @@ async function changePassword(req, res) {
 
     return res.json({ message: 'Password changed successfully' });
   } catch (err) {
-    return res.status(500).json({ error: err.message });
+    console.error('User route error:', err);
+    return res.status(500).json({ error: 'Something went wrong' });
   }
 }
 
@@ -179,6 +213,11 @@ async function uploadProfilePicture(req, res) {
     }
     if (file.size > MAX_AVATAR_BYTES) {
       return res.status(400).json({ error: 'File too large (max 2MB)' });
+    }
+    // Magic-bytes check: confirm the buffer is genuinely a JPEG/PNG/WebP and
+    // not, e.g., an HTML/script file with a faked image mimetype.
+    if (!hasValidImageSignature(file.buffer)) {
+      return res.status(400).json({ error: 'Invalid image file' });
     }
 
     const ext = ALLOWED_MIME[file.mimetype];
@@ -217,7 +256,8 @@ async function uploadProfilePicture(req, res) {
         console.error('Avatar cleanup failed:', cleanupErr.message);
       }
     }
-    return res.status(500).json({ error: err.message });
+    console.error('User route error:', err);
+    return res.status(500).json({ error: 'Something went wrong' });
   }
 }
 
